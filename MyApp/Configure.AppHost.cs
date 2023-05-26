@@ -1,6 +1,7 @@
 ﻿using Funq;
 using ServiceStack;
 using MyApp.ServiceInterface;
+using ServiceStack.IO;
 
 [assembly: HostingStartup(typeof(MyApp.AppHost))]
 
@@ -21,6 +22,15 @@ public class AppHost : AppHostBase, IHostingStartup
         Plugins.Add(new SharpPagesFeature {
             EnableSpaFallback = true
         }); 
+        
+        Plugins.Add(new RequestLogsFeature {
+            RequestLogger = new CsvRequestLogger(
+                files: new FileSystemVirtualFiles(HostContext.Config.WebHostPhysicalPath),
+                requestLogsPattern: "requestlogs/{year}-{month}/{year}-{month}-{day}.csv",
+                errorLogsPattern: "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv",
+                appendEvery: TimeSpan.FromSeconds(1)
+            ),
+        });
 
         SetConfig(new HostConfig {
             AddRedirectParamsToQueryString = true,
